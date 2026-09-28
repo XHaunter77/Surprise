@@ -95,6 +95,149 @@
     margin: 0;
   }
 
+  /* Envelope intro screen */
+  .envelope-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #ffe3ee 0%, #f3e5ff 45%, #fff4e0 100%);
+    cursor: pointer;
+    transition: opacity 0.7s ease, visibility 0.7s ease;
+  }
+
+  .envelope-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .envelope-hint {
+    margin-top: 26px;
+    font-weight: 700;
+    color: var(--purple);
+    letter-spacing: 0.5px;
+    animation: bob 1.6s ease-in-out infinite;
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .envelope {
+    position: relative;
+    width: 260px;
+    height: 170px;
+    perspective: 900px;
+  }
+
+  .envelope-body {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(168, 111, 255, 0.35);
+    overflow: hidden;
+  }
+
+  .envelope-body::before {
+    content: "";
+    position: absolute;
+    left: 0; bottom: 0;
+    border-left: 130px solid transparent;
+    border-right: 130px solid transparent;
+    border-bottom: 85px solid rgba(255,255,255,0.15);
+  }
+
+  .envelope-flap {
+    position: absolute;
+    top: 0; left: 0;
+    width: 0;
+    height: 0;
+    border-left: 130px solid transparent;
+    border-right: 130px solid transparent;
+    border-top: 92px solid var(--pink-light);
+    transform-origin: top;
+    transform: rotateX(0deg);
+    transition: transform 0.7s ease;
+    z-index: 3;
+  }
+
+  .envelope.opening .envelope-flap {
+    transform: rotateX(180deg);
+  }
+
+  .envelope-seal {
+    position: absolute;
+    top: 68px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 54px;
+    height: 54px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    z-index: 4;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .envelope.opening .envelope-seal {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+
+  .envelope-label {
+    position: absolute;
+    bottom: 22px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.05rem;
+    z-index: 2;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  .letter-poke {
+    position: absolute;
+    top: -18px;
+    left: 20px;
+    right: 20px;
+    height: 60px;
+    background: var(--cream);
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.08);
+    z-index: 1;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: transform 0.6s ease 0.3s, opacity 0.6s ease 0.3s;
+  }
+
+  .envelope.opening .letter-poke {
+    opacity: 1;
+    transform: translateY(-40px);
+  }
+
+  .site-content {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .site-content.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   .card {
     background: var(--cream);
     border-radius: 28px;
@@ -245,11 +388,22 @@
 </head>
 <body>
 
-<div class="wrap">
+<div class="envelope-screen" id="envelopeScreen">
+  <div class="envelope" id="envelope">
+    <div class="letter-poke"></div>
+    <div class="envelope-body">
+      <div class="envelope-label">For Kycel 💌</div>
+    </div>
+    <div class="envelope-seal">💗</div>
+    <div class="envelope-flap"></div>
+  </div>
+  <p class="envelope-hint">Tap to open</p>
+</div>
+
+<div class="wrap site-content" id="siteContent">
   <header>
     <span class="badge">A Little Letter For You</span>
     <h1>Happy Birthday, Kycel! 🎂</h1>
-    <p class="subtitle">From Grade 7 to 4th Year College — and every chapter in between</p>
   </header>
 
   <div class="card">
@@ -295,7 +449,7 @@
 
       <p>So today, relax, celebrate, and enjoy every single moment. You deserve all the happiness in the world. Happy birthday, Kycel! Here's to many more years of friendship. 🎉</p>
 
-      <p class="signature">With love and gratitude,<br>Your friend since Grade 7</p>
+      <p class="signature">With love and gratitude,<br>From EJ</p>
     </div>
 
     <button class="confetti-btn" onclick="launchConfetti()">🎊 Celebrate!</button>
@@ -305,21 +459,22 @@
 </div>
 
 <script>
-  // Floating balloons
   const colors = ['#ff6fa5', '#a86fff', '#ffd166', '#6fd6ff', '#ff9f6f'];
-  const balloonWrap = document.body;
-  for (let i = 0; i < 10; i++) {
-    const b = document.createElement('div');
-    b.className = 'balloon';
-    b.style.left = Math.random() * 100 + 'vw';
-    b.style.background = colors[i % colors.length];
-    b.style.animationDuration = (14 + Math.random() * 10) + 's';
-    b.style.animationDelay = (Math.random() * 10) + 's';
-    balloonWrap.appendChild(b);
+
+  function spawnAmbientBalloons() {
+    for (let i = 0; i < 10; i++) {
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      b.style.left = Math.random() * 100 + 'vw';
+      b.style.background = colors[i % colors.length];
+      b.style.animationDuration = (14 + Math.random() * 10) + 's';
+      b.style.animationDelay = (Math.random() * 2) + 's';
+      document.body.appendChild(b);
+    }
   }
 
-  function launchConfetti() {
-    for (let i = 0; i < 80; i++) {
+  function launchConfetti(count = 80) {
+    for (let i = 0; i < count; i++) {
       const piece = document.createElement('div');
       piece.className = 'confetti-piece';
       piece.style.left = Math.random() * 100 + 'vw';
@@ -342,6 +497,40 @@
       setTimeout(() => piece.remove(), duration);
     }
   }
+
+  function launchBurstBalloons(count = 14) {
+    for (let i = 0; i < count; i++) {
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      b.style.left = (35 + Math.random() * 30) + 'vw';
+      b.style.bottom = '-100px';
+      b.style.background = colors[i % colors.length];
+      b.style.animationDuration = (5 + Math.random() * 3) + 's';
+      b.style.animationDelay = (Math.random() * 0.5) + 's';
+      document.body.appendChild(b);
+      setTimeout(() => b.remove(), 9000);
+    }
+  }
+
+  const envelope = document.getElementById('envelope');
+  const envelopeScreen = document.getElementById('envelopeScreen');
+  const siteContent = document.getElementById('siteContent');
+  let opened = false;
+
+  envelopeScreen.addEventListener('click', () => {
+    if (opened) return;
+    opened = true;
+
+    envelope.classList.add('opening');
+    launchConfetti(120);
+    launchBurstBalloons(16);
+
+    setTimeout(() => {
+      envelopeScreen.classList.add('hidden');
+      siteContent.classList.add('revealed');
+      spawnAmbientBalloons();
+    }, 750);
+  });
 </script>
 
 </body>
